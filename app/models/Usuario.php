@@ -15,7 +15,7 @@ class Usuario
         $consulta->bindValue(':clave', $claveHash);
         $consulta->execute();
 
-        return $objAccesoDatos->obtenerUltimoId();
+        return $objAccesoDatos->obtenerUltimoId();  //funcion ya codeada que me trae al ultimo usuario creado
     }
 
     public static function getIDByName($usuario){
@@ -75,5 +75,30 @@ class Usuario
         $consulta->bindValue(':id', $usuarioId, PDO::PARAM_INT);
         //$consulta->bindValue(':fechaBaja', date_format($fecha, 'Y-m-d H:i:s'));
         $consulta->execute();
+    }
+
+    public static function verificarDatosLogin($user, $clave)
+    {
+        $objAccesoDato = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDato->prepararConsulta("SELECT id, usuario, clave FROM usuarios WHERE usuario = :user");
+        $consulta->bindValue(':user', $user, PDO::PARAM_STR);
+        $consulta->execute();
+
+        $userDataBase = $consulta->fetchObject('Usuario'); //retorna un objeto Usuario
+        $retorno = -1;
+
+        //var_dump($userDataBase);
+
+        if($userDataBase->usuario) //literal la property usuario ya que creo un objeto usuario
+        {
+            if(password_verify($clave,$userDataBase->clave) ||  $userDataBase->clave == $clave)
+            {
+                $retorno = 1; //el usuario exsite y matchea la contraseña, ya sea una de tipo password_hash o no
+            }else{
+                $retorno = 2; //el usuario exsite, no matchea la contraseña
+            }
+        }
+
+        return $retorno;
     }
 }
