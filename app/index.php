@@ -18,6 +18,8 @@ require_once './db/AccesoDatos.php';
 require_once './controllers/UsuarioController.php';
 
 require_once './middlewares/VerificadorLoginMiddleware.php';
+require_once './middlewares/IdExisteMiddleware.php';
+
 
 // Load ENV
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
@@ -40,9 +42,9 @@ $app->group('/usuarios', function (RouteCollectorProxy $group) {
     $group->get('[/]', \UsuarioController::class . ':TraerTodos'); //corchete opcional
     $group->get('/{usuario}', \UsuarioController::class . ':TraerUno'); //llaves es variable
     $group->post('[/]', \UsuarioController::class . ':CargarUno');
-    $group->put('[/]', \UsuarioController::class . ':ModificarUno');
-    $group->put('/{usuario}', \UsuarioController::class . ':ModificarClavePorNombre');
-    $group->delete('[/]', \UsuarioController::class . ':BorrarUno');
+    $group->put('[/]', \UsuarioController::class . ':ModificarUno')->add(new IdExisteMiddleware());
+    $group->put('/{usuario}', \UsuarioController::class . ':ModificarClavePorNombre'); 
+    $group->delete('[/]', \UsuarioController::class . ':BorrarUno')->add(new IdExisteMiddleware());
     $group->post('/login', \UsuarioController::class . ':Login')->add(new VerificadorLoginMiddleware());
   });
 

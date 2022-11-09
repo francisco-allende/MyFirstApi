@@ -81,20 +81,22 @@ class UsuarioController extends Usuario implements IApiUsable
           ->withHeader('Content-Type', 'application/json');
     }
 
+    //cambiar el mensaje para cuando no existe
     public function BorrarUno($request, $response, $args)
     {
         $parametros = $request->getParsedBody();
 
         $usuarioId = $parametros['id'];
-        Usuario::borrarUsuario($usuarioId);
-
+        $noExiste = Usuario::borrarUsuario($usuarioId);
+        
         $payload = json_encode(array("mensaje" => "Usuario borrado con exito"));
-
+  
         $response->getBody()->write($payload);
         return $response
           ->withHeader('Content-Type', 'application/json');
     }
 
+    //No use al final el fecha antes middleware porque se me pisaban los dos response body y se me complico parsearlo a string
     public function Login($request, $response, $args)
     {
         $parametros = $request->getParsedBody();
@@ -105,7 +107,13 @@ class UsuarioController extends Usuario implements IApiUsable
         
         if($retornoLogin === 1)
         {
-          $response->getBody()->write("Sesión iniciada correctamente");
+          $fechaAntes = date("d/m/Y h:i:s"); //minuto es i, sino pone el mes
+          sleep(10);
+          $fechaAhora = date("d/m/Y h:i:s");
+          
+          $msj = "Fecha Logueo: $fechaAntes ".PHP_EOL. "Fecha Entrada $fechaAhora".PHP_EOL;
+
+          $response->getBody()->write($msj."Sesión iniciada correctamente");
         }
         else if($retornoLogin === 2)
         {

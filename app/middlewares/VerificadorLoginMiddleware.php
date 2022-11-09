@@ -16,6 +16,8 @@ class VerificadorLoginMiddleware
 
         $parametros = $request->getParsedBody();
 
+        sleep(5); //simulo un letargo de 5 segundos
+
         if(isset($parametros["clave"]) && isset($parametros["usuario"]))
         {
             if($parametros["clave"] != "" && !empty($parametros["usuario"])) //dos maneras de validar campos vacios
