@@ -20,6 +20,14 @@ require_once './controllers/UsuarioController.php';
 require_once './middlewares/VerificadorLoginMiddleware.php';
 require_once './middlewares/IdExisteMiddleware.php';
 
+//tokens. Se me ocurre que solo un admin o dev puede verlos como perfil. Valido antes con middleware
+require_once './utils/JwtChecker.php';
+require_once './middlewares/CrearToken.php';
+require_once './middlewares/DevolverPayload.php';
+require_once './middlewares/DevolverDatos.php';
+require_once './middlewares/VerificarToken.php';
+
+
 
 // Load ENV
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
@@ -46,8 +54,15 @@ $app->group('/usuarios', function (RouteCollectorProxy $group) {
     $group->put('/{usuario}', \UsuarioController::class . ':ModificarClavePorNombre'); 
     $group->delete('[/]', \UsuarioController::class . ':BorrarUno')->add(new IdExisteMiddleware());
     $group->post('/login', \UsuarioController::class . ':Login')->add(new VerificadorLoginMiddleware());
-  });
+})->add(new JwtChecker()); // valido que tenga un jwt en la cabecera
 
+// JWT test routes. Son de testeo, la onda es usarla por dentro como middlewares, como el crear en el login y el verificar en todas als de usuario
+$app->group('/jwt', function (RouteCollectorProxy $group) {
+  $group->post('/crearToken', new CrearToken()); 
+  $group->get('/devolverPayLoad', new DevolverPayLoad()); 
+  $group->get('/devolverDatos', new DevolverDatos()); 
+  $group->get('/verificarToken', new VerificarToken()); 
+});
 
 
 $app->get('[/]', function (Request $request, Response $response) {    

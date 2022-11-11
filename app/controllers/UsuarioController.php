@@ -1,6 +1,7 @@
 <?php
 require_once './models/Usuario.php';
 require_once './interfaces/IApiUsable.php';
+require_once './utils/AutentificadorJWT.php';
 
 class UsuarioController extends Usuario implements IApiUsable
 {
@@ -106,14 +107,20 @@ class UsuarioController extends Usuario implements IApiUsable
         $retornoLogin = Usuario::verificarDatosLogin($usuario, $clave);
         
         if($retornoLogin === 1)
-        {
-          $fechaAntes = date("d/m/Y h:i:s"); //minuto es i, sino pone el mes
-          sleep(10);
-          $fechaAhora = date("d/m/Y h:i:s");
-          
-          $msj = "Fecha Logueo: $fechaAntes ".PHP_EOL. "Fecha Entrada $fechaAhora".PHP_EOL;
+        {       
+          $datos = array('usuario' => $usuario);
+          $token = AutentificadorJWT::CrearToken($datos);
+          //soluciono el response que se pisa y opaca al otro
+          $payload = json_encode(array('jwt' => $token));
+          $payload .= json_encode(array('fecha' => $msj = UsuarioController::GetFechaLogueo()));
+          $payload .= json_encode(array('msj' => "Sesión iniciada correctamente"));
 
-          $response->getBody()->write($msj."Sesión iniciada correctamente");
+          $response->getBody()->write($payload);
+          return $response
+            ->withHeader(
+              'Content-Type',
+              'application/json'
+            );
         }
         else if($retornoLogin === 2)
         {
@@ -126,5 +133,13 @@ class UsuarioController extends Usuario implements IApiUsable
 
         return $response
           ->withHeader('Content-Type', 'application/json');
+    }
+
+    public function GetFechaLogueo()
+    {
+        $fechaAntes = date("d/m/Y h:i:s"); //minuto es i, sino pone el mes
+        sleep(1);
+        $fechaAhora = date("d/m/Y h:i:s");
+        return "Fecha Logueo: $fechaAntes ". " ". "Fecha Entrada $fechaAhora";
     }
 }
