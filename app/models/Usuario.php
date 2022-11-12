@@ -63,6 +63,12 @@ class Usuario
         $consulta->bindValue(':clave', $clave, PDO::PARAM_STR);
         $consulta->bindValue(':id', $id, PDO::PARAM_INT);
         $consulta->execute();
+
+        if($consulta->rowCount() == 1){
+            return true;
+        }else{
+            return false;
+        }
     }
 
     //Comente lo anterior porque no da de baja sino que hace baja logica, agrega una fecha de baja
@@ -75,6 +81,13 @@ class Usuario
         $consulta->bindValue(':id', $usuarioId, PDO::PARAM_INT);
         //$consulta->bindValue(':fechaBaja', date_format($fecha, 'Y-m-d H:i:s'));
         $consulta->execute();
+
+        //rowCount es de PDO y retorna el nro de filas afectadas
+        if($consulta->rowCount() == 1){
+            return true;
+        }else{
+            return false;
+        }
     }
 
     public static function verificarDatosLogin($user, $clave)

@@ -19,6 +19,7 @@ class UsuarioController extends Usuario implements IApiUsable
         $usr->crearUsuario();
 
         $payload = json_encode(array("mensaje" => "Usuario creado con exito"));
+        echo $payload;
 
         $response->getBody()->write($payload);
         return $response
@@ -33,6 +34,7 @@ class UsuarioController extends Usuario implements IApiUsable
         $payload = json_encode($usuario);
 
         $response->getBody()->write($payload);
+    
         return $response
           ->withHeader('Content-Type', 'application/json');
     }
@@ -43,6 +45,8 @@ class UsuarioController extends Usuario implements IApiUsable
         $payload = json_encode(array("listaUsuario" => $lista));
 
         $response->getBody()->write($payload);
+        echo $payload; //no pude hacer que no se superpongan el write body payload con el token valido del middleware
+
         return $response
           ->withHeader('Content-Type', 'application/json');
     }
@@ -55,10 +59,15 @@ class UsuarioController extends Usuario implements IApiUsable
         $u = Usuario::getIDByName($usr);
 
         $claveACambiar = $parametros['clave'];
+        $fueModificado = Usuario::modificarClaveUsuarioPorNombre($u->id, $claveACambiar);
 
-        Usuario::modificarClaveUsuarioPorNombre($u->id, $claveACambiar);
-
-        $payload = json_encode(array("mensaje" => "Clave modificada con exito"));
+        $payload = "";
+        if($fueModificado){
+          $payload = json_encode(array("mensaje" => "Clave modificada con exito"));
+        }else{
+          $payload = json_encode(array("mensaje" => "No se pudo modificar la clave. Usuario no encontrado"));
+        }
+        echo $payload;
 
         $response->getBody()->write($payload);
         return $response
@@ -72,6 +81,7 @@ class UsuarioController extends Usuario implements IApiUsable
         $id = $parametros['id'];
         $usuario = $parametros['usuario'];
         $clave = $parametros['clave'];
+      
 
         Usuario::modificarUsuario($id, $usuario, $clave);
 
@@ -88,9 +98,15 @@ class UsuarioController extends Usuario implements IApiUsable
         $parametros = $request->getParsedBody();
 
         $usuarioId = $parametros['id'];
-        $noExiste = Usuario::borrarUsuario($usuarioId);
-        
-        $payload = json_encode(array("mensaje" => "Usuario borrado con exito"));
+        $fueBorrado = Usuario::borrarUsuario($usuarioId);
+
+        $payload = "";
+        if($fueBorrado){
+          $payload = json_encode(array("mensaje" => "Usuario borrado con exito"));
+        }else{
+          $payload = json_encode(array("mensaje" => "No se pudo borrar. Usuario no encontrado"));
+        }
+        echo $payload;
   
         $response->getBody()->write($payload);
         return $response
