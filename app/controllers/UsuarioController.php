@@ -19,7 +19,6 @@ class UsuarioController extends Usuario implements IApiUsable
         $usr->crearUsuario();
 
         $payload = json_encode(array("mensaje" => "Usuario creado con exito"));
-        echo $payload;
 
         $response->getBody()->write($payload);
         return $response
@@ -45,7 +44,6 @@ class UsuarioController extends Usuario implements IApiUsable
         $payload = json_encode(array("listaUsuario" => $lista));
 
         $response->getBody()->write($payload);
-        echo $payload; //no pude hacer que no se superpongan el write body payload con el token valido del middleware
 
         return $response
           ->withHeader('Content-Type', 'application/json');
@@ -67,7 +65,6 @@ class UsuarioController extends Usuario implements IApiUsable
         }else{
           $payload = json_encode(array("mensaje" => "No se pudo modificar la clave. Usuario no encontrado"));
         }
-        echo $payload;
 
         $response->getBody()->write($payload);
         return $response
@@ -106,7 +103,6 @@ class UsuarioController extends Usuario implements IApiUsable
         }else{
           $payload = json_encode(array("mensaje" => "No se pudo borrar. Usuario no encontrado"));
         }
-        echo $payload;
   
         $response->getBody()->write($payload);
         return $response
@@ -157,5 +153,38 @@ class UsuarioController extends Usuario implements IApiUsable
         sleep(1);
         $fechaAhora = date("d/m/Y h:i:s");
         return "Fecha Logueo: $fechaAntes ". " ". "Fecha Entrada $fechaAhora";
+    }
+
+    //Ejercicio Middleware Credenciales
+    //Como traer con get un usuario. No uso body en postman que es con: $parametros = $request->getParsedBody();
+    //Sino que uso  $args['usuario'];
+    //en el ruteo del index, debe ir '/{usuario}' o sino el mi programa no espera ningun parametro
+    public function VerificarCredenciales($request, $response, $args)
+    {
+        $usr = $args['usuario'];
+        //Como lo que retorna Usuario::obtenerUsuario($usr); es un objeto, lo paso a json. Accedo a propiedades con ->
+        //el payload es siempre un json. 
+        $usuario = Usuario::obtenerUsuario($usr); 
+     
+        $payload = json_encode(array("Verifico credenciales" => "Bienvenido $usuario->usuario, No necesito credenciales para get"));
+        $response->getBody()->write($payload);
+
+        return $response
+          ->withHeader('Content-Type', 'application/json');
+    }
+
+    public function VerificarCredencialesPost($request, $response, $args)
+    {
+        $parametros = $request->getParsedBody();
+        $nombre = $parametros['nombre'];
+        $perfil = $parametros['perfil'];
+        
+        $usuario = Usuario::obtenerUsuario($nombre); 
+
+        $payload = json_encode(array("Verifico credenciales" => "Bienvenido $usuario->usuario, Post necesita credenciales"));
+        $response->getBody()->write($payload);
+
+        return $response
+          ->withHeader('Content-Type', 'application/json');
     }
 }

@@ -21,11 +21,12 @@ require_once './middlewares/VerificadorLoginMiddleware.php';
 require_once './middlewares/IdExisteMiddleware.php';
 
 //tokens. Se me ocurre que solo un admin o dev puede verlos como perfil. Valido antes con middleware
-require_once './middlewares/JwtChecker.php';
+require_once './middlewares/VerificarJWT.php';
 require_once './middlewares/CrearToken.php';
 require_once './middlewares/DevolverPayload.php';
 require_once './middlewares/DevolverDatos.php';
 require_once './middlewares/VerificarToken.php';
+require_once './middlewares/EsAdmin.php';
 
 
 
@@ -54,7 +55,30 @@ $app->group('/usuarios', function (RouteCollectorProxy $group) {
     $group->put('/{usuario}', \UsuarioController::class . ':ModificarClavePorNombre'); 
     $group->delete('[/]', \UsuarioController::class . ':BorrarUno')->add(new IdExisteMiddleware());
     $group->post('/login', \UsuarioController::class . ':Login')->add(new VerificadorLoginMiddleware());
-})->add(new JwtChecker()); // valido que tenga un jwt en la cabecera. Debe ir aca asi no llega al controller sin valdiacion
+})->add(new VerificarJWT()); // valido que tenga un jwt en la cabecera. Debe ir aca asi no llega al controller sin valdiacion
+
+$app->group('/credenciales', function(RouteCollectorProxy $group){
+            $group->get('/{usuario}', \UsuarioController::class . ':VerificarCredenciales');
+            $group->post('[/]', \UsuarioController::class . ':VerificarCredencialesPost')->add(new EsAdmin());
+})->add(new VerificarJWT());
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // JWT test routes. Son de testeo, la onda es usarla por dentro como middlewares, como el crear en el login y el verificar en todas als de usuario
 $app->group('/jwt', function (RouteCollectorProxy $group) {
